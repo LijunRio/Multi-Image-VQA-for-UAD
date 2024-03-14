@@ -1,0 +1,22 @@
+### Example user template template
+### Example user template
+
+# IntelliJ project files
+.idea
+models/VQA/lightning_logs
+models/inference/lightning_logs
+mydatasets/__pycache__
+models/inference/__pycache__
+models/VQA/__pycache__
+models/backbones/__pycache__
+models/backbones/GPT2/pytorch_model.bin
+lightning_logs/
+__pycache__/
+evaluation/res/
+data/dataset/
+data/ckpts
+*.iml
+out
+gen
+
+
