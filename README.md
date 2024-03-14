@@ -6,12 +6,7 @@ This repository contains the code for the paper "Multi-Image Visual Question Ans
 If you find this repo useful for your research, please consider citing our paper:
 
 ```latex
-@article{2206.09378,
-Author = {J},
-Title = {A Self-Guided Framework for Radiology Report Generation},
-Year = {2024},
-Eprint = {},
-}
+
 
 ```
 
