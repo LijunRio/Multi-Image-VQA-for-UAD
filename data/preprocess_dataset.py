@@ -2,9 +2,9 @@ import json
 import shutil
 import os
 
-train_json = './dataset/annotations/train.json'
-test_json = './dataset/annotations/test.json'
-val_json = './dataset/annotations/valid.json'
+train_json = './dataset/annotations/new_train.json'
+test_json = './dataset/annotations/new_test.json'
+val_json = './dataset/annotations/new_valid.json'
 
 image_dir = './dataset/image'
 os.makedirs(image_dir, exist_ok=True)

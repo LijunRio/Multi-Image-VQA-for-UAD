@@ -11,7 +11,7 @@ If you find this repo useful for your research, please consider citing our paper
 ```
 
 ## Dataset
-- Donlad the dataset to ./data/dataset :
+- Download the [MI-VQA dataset](https://drive.google.com/file/d/1mHjtd_yV6ewRFC7ujwBM9_HDSnKUx5l5/view?usp=sharing) to ./data/dataset :
   - Data preprocess
     ```
     cd data
