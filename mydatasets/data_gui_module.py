@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 
 
 class DataModule(pl.LightningDataModule):
-    def __init__(self, dataset, collate_fn, transforms, data_pct, train_dataset, valid_dataset, test_dataset,batch_size, num_workers,
+    def __init__(self, dataset, image_path, prompt,collate_fn, transforms, data_pct, train_dataset, valid_dataset, test_dataset,batch_size, num_workers,
                  crop_size=224):
         super().__init__()
 
@@ -17,6 +17,8 @@ class DataModule(pl.LightningDataModule):
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.crop_size = crop_size
+        self.prompt = prompt
+        self.image_path = image_path
 
     def train_dataloader(self):
         # 图像变换
@@ -28,6 +30,11 @@ class DataModule(pl.LightningDataModule):
         dataset = self.dataset(
             split="train", transform=transform, data_pct=self.data_pct,
             train_dataset=self.train_dataset, valid_dataset=self.valid_dataset, test_dataset=self.test_dataset)  # 数据集初始化
+
+        # dataset = self.dataset(image_pth = self.image_path,prompt=self.prompt,
+        #     split="train", transform=transform, data_pct=self.data_pct,
+        #     train_dataset=self.train_dataset, valid_dataset=self.valid_dataset,
+        #     test_dataset=self.test_dataset)  # 数据集初始化
 
         return DataLoader(
             dataset,
@@ -62,9 +69,14 @@ class DataModule(pl.LightningDataModule):
             transform = self.transforms(False, self.crop_size)
         else:
             transform = None
-        dataset = self.dataset(
-            split="test", transform=transform, data_pct=self.data_pct,
-            train_dataset=self.train_dataset, valid_dataset=self.valid_dataset, test_dataset=self.test_dataset)
+        # dataset = self.dataset(
+        #     split="test", transform=transform, data_pct=self.data_pct,
+        #     train_dataset=self.train_dataset, valid_dataset=self.valid_dataset, test_dataset=self.test_dataset)
+
+        dataset = self.dataset(image_pth=self.image_path, prompt=self.prompt,
+                               split="test", transform=transform, data_pct=self.data_pct,
+                               train_dataset=self.train_dataset, valid_dataset=self.valid_dataset,
+                               test_dataset=self.test_dataset)  # 数据集初始化
         return DataLoader(
             dataset,
             pin_memory=True,
@@ -75,3 +87,24 @@ class DataModule(pl.LightningDataModule):
         )
 
 
+    def predict_dataloader(self):
+        if self.transforms:
+            transform = self.transforms(False, self.crop_size)
+        else:
+            transform = None
+        # dataset = self.dataset(
+        #     split="test", transform=transform, data_pct=self.data_pct,
+        #     train_dataset=self.train_dataset, valid_dataset=self.valid_dataset, test_dataset=self.test_dataset)
+
+        dataset = self.dataset(image_pth=self.image_path, prompt=self.prompt,
+                               split="test", transform=transform, data_pct=self.data_pct,
+                               train_dataset=self.train_dataset, valid_dataset=self.valid_dataset,
+                               test_dataset=self.test_dataset)  # 数据集初始化
+        return DataLoader(
+            dataset,
+            pin_memory=True,
+            shuffle=False,
+            collate_fn=self.collate_fn,
+            batch_size=self.batch_size,
+            num_workers=self.num_workers
+        )

@@ -52,27 +52,6 @@ class Captioner(LightningModule):
         with torch.no_grad():
             qfeat = self.model.encode(img0, img1, img2)
             device = img0.device
-
-
-            # if self.model_type =='KQFormer_concat':
-            #     qfeat = qfeat.repeat(1, self.beam_size, 1).view(bs * self.beam_size, 96, 768)
-            #     encoder_mask = torch.ones((bs * self.beam_size, 96)).to(device)
-            # elif self.model_type == 'MI_average_vit' or self.model_type == 'channel_VIT':
-            #     qfeat = qfeat.repeat(1, self.beam_size, 1).view(bs * self.beam_size, 197, 768) # VIT
-            #     encoder_mask = torch.ones((bs * self.beam_size, 197)).to(device)
-            # elif self.model_type == 'average_ResNet'or self.model_type == 'channel_ResNet':
-            #     qfeat = qfeat.repeat(1, self.beam_size, 1).view(bs * self.beam_size, 362, 768) # ResNet
-            #     encoder_mask = torch.ones((bs * self.beam_size, 362)).to(device)
-            # elif self.model_type == 'concate_VIT_ResNet': # concate
-            #     qfeat = qfeat.repeat(1, self.beam_size, 1).view(bs * self.beam_size, 96, 768)
-            #     encoder_mask = torch.ones((bs * self.beam_size, 96)).to(device)
-            # elif self.model_type =='channel_qformer':
-            #     qfeat = qfeat.repeat(1, self.beam_size, 1).view(bs * self.beam_size, 96, 768)
-            #     encoder_mask = torch.ones((bs * self.beam_size, 96)).to(device)
-            #
-            # else:
-            #     raise ValueError('please enter a valid model type!')
-
             if self.model_type =='KQFormer_concat':
                 qfeat = qfeat.repeat(1, self.beam_size, 1).view(bs * self.beam_size, 96, 768)
                 encoder_mask = torch.ones((bs * self.beam_size, 96)).to(device)
@@ -133,11 +112,95 @@ class Captioner(LightningModule):
                 A_p = all_result_lists[i]
                 A_gt = all_caption_lists[i]
                 writer.write(name + '\t' + Q + '\t' + A_gt + '\t' + A_p + '\n')
-
         return {'res': all_result_lists, 'ref': all_caption_lists}
 
     def test_step(self, batch, batch_idx):
         return self.share_step(batch)
+    # def test_step(self, batch, batch_idx):
+    #     res =  self.share_step(batch)
+    #     return res
+
+
+    def forward(self, batch):
+        self.model.eval()
+        all_result_lists = []
+        all_caption_lists = []
+        all_question_lists = []
+        all_filename_lists = []
+        img0 = batch['img0']
+        img1 = batch['img1']
+        img2 = batch['img2']
+        output_caption_ids = batch['caption']
+        prompts = batch['prompt']
+        file_name = batch['filename']
+        prompt_ids = [self.tokenizer.encode(pt) for pt in prompts]
+
+        bs = len(img0)
+
+        with torch.no_grad():
+            qfeat = self.model.encode(img0, img1, img2)
+            device = img0.device
+            if self.model_type =='KQFormer_concat':
+                qfeat = qfeat.repeat(1, self.beam_size, 1).view(bs * self.beam_size, 96, 768)
+                encoder_mask = torch.ones((bs * self.beam_size, 96)).to(device)
+            elif self.model_type == 'MI_average_vit' or self.model_type == 'MI_channel_vit':
+                qfeat = qfeat.repeat(1, self.beam_size, 1).view(bs * self.beam_size, 197, 768) # VIT
+                encoder_mask = torch.ones((bs * self.beam_size, 197)).to(device)
+            elif self.model_type == 'MI_average_res'or self.model_type == 'MI_channel_res':
+                qfeat = qfeat.repeat(1, self.beam_size, 1).view(bs * self.beam_size, 362, 768) # ResNet
+                encoder_mask = torch.ones((bs * self.beam_size, 362)).to(device)
+            elif self.model_type == 'MI_concat': # concate
+                qfeat = qfeat.repeat(1, self.beam_size, 1).view(bs * self.beam_size, 96, 768)
+                encoder_mask = torch.ones((bs * self.beam_size, 96)).to(device)
+            elif self.model_type =='KQFormer_channel':
+                qfeat = qfeat.repeat(1, self.beam_size, 1).view(bs * self.beam_size, 96, 768)
+                encoder_mask = torch.ones((bs * self.beam_size, 96)).to(device)
+
+            else:
+                raise ValueError('please enter a valid model type!')
+
+
+            # -- Prepare beams
+            inst_dec_beams = [Beam(self.beam_size, device=device, tokenizer=self.tokenizer, prompt=prompt_ids[idx]) for idx in range(bs)]
+            # -- Bookkeeping for active or not
+            active_inst_idx_list = list(range(bs))
+            inst_idx_to_position_map = get_inst_idx_to_tensor_position_map(active_inst_idx_list)
+            # -- Decode
+            for len_dec_seq in range(len(prompt_ids[0]), self.max_words + 1):
+                active_inst_idx_list = beam_decode_step(self.model, inst_dec_beams,
+                                                        len_dec_seq, inst_idx_to_position_map, self.beam_size, device,
+                                                        qfeat, encoder_mask)
+
+                if not active_inst_idx_list:
+                    break  # all instances have finished their path to <EOS>
+
+                qfeat, encoder_mask, inst_idx_to_position_map = collate_active_info(qfeat, encoder_mask, inst_idx_to_position_map, active_inst_idx_list, self.beam_size, device)
+
+        batch_hyp, batch_scores = collect_hypothesis_and_scores(inst_dec_beams, 1)
+        result_list = [batch_hyp[i][0] for i in range(bs)]
+        caption_list = output_caption_ids.cpu().detach().numpy()
+
+
+        result_ids = result_list[0][len(prompt_ids[0])-1:] # [[0,1,23,...]]
+        decoded_res = self.tokenizer.decode(result_ids, skip_special_tokens=True)
+        gt_ids = caption_list[0] # [[0,1,23,...]]
+        decoded_gt = self.tokenizer.decode(gt_ids, skip_special_tokens=True)
+
+
+        all_result_lists.append(decoded_res)
+        all_caption_lists.append(decoded_gt)
+        all_question_lists.append(prompts[0])
+        all_filename_lists.append(file_name[0])
+
+            # Save pure results
+        with open(self.hyp_path, "a", encoding='utf-8') as writer:
+            for i in range(len(all_result_lists)):
+                name = all_filename_lists[i]
+                Q = all_question_lists[i]
+                A_p = all_result_lists[i]
+                A_gt = all_caption_lists[i]
+                writer.write(name + '\t' + Q + '\t' + A_gt + '\t' + A_p + '\n')
+        return {'res': all_result_lists, 'ref': all_caption_lists}
 
     def configure_optimizers(self):
         optimizer = torch.optim.AdamW(
