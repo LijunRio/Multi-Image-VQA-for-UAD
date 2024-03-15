@@ -37,5 +37,9 @@ If you find this repo useful for your research, please consider citing our paper
     cd evaluation
     python evaluate.py
     ```
-  
+- To run the gui interface
+    ```
+     cd ./models/inference
+    streamlit run streamlit_gui.py
+    ```
 # Acknowledge

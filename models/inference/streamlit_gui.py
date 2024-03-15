@@ -49,8 +49,32 @@ def run_inference(args):
 def main():
     st.title("Multi Image VQA for Unsupervised Anomaly Detection")
     # Sidebar for user input
-    st.sidebar.header("Inputs")
-    image_path = st.sidebar.text_input("image path","/media/june/B6CAFC57CAFC14F9/Data/Anomaly_dataset/posttreatment_change_25_{}.png")
+    # st.sidebar.header("Inputs")
+    # image_path = st.sidebar.text_input("image path","/media/june/B6CAFC57CAFC14F9/Data/Anomaly_dataset/posttreatment_change_25_{}.png")
+
+    st.header("Inputs")
+    # image_path = st.text_input("**Image Path**","/media/june/B6CAFC57CAFC14F9/Data/Anomaly_dataset/posttreatment_change_25_{}.png")
+    image_path = st.text_input("**Image Path**",
+                               "/media/june/B6CAFC57CAFC14F9/Data/Anomaly_dataset/posttreatment_change_10_{}.png",
+                               key="image_path_input", max_chars=500, help="Input the path to the image, and please replace the 'orig', 'anomaly','rec' to {}.")
+
+    # Display the images
+    image_path_orig = image_path.replace("{}", "orig")
+    image_path_anomaly = image_path.replace("{}", "anomaly")
+    image_path_rec = image_path.replace("{}", "rec")
+
+    if os.path.exists(image_path_orig) and os.path.exists(image_path_anomaly) and os.path.exists(image_path_rec):
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.image(image_path_orig, caption='Original Image', use_column_width=True)
+
+        with col2:
+            st.image(image_path_anomaly, caption='Anomaly Image', use_column_width=True)
+
+        with col3:
+            st.image(image_path_rec, caption='Reconstructed Image', use_column_width=True)
+    else:
+        st.write("Images not found at provided paths")
     # prompt = st.sidebar.text_input("Prompt", "Can you comment on the severity of the pathology?")
     prompt_options = [
         "Is the case normal?",
@@ -63,12 +87,13 @@ def main():
     ]
 
     prompt_options.append("Other")
+    # selected_prompt = st.sidebar.selectbox("Select a prompt or choose 'Other' to enter your own prompt", prompt_options,index=0)
+    selected_prompt = st.selectbox("Question:", prompt_options,index=0,
+                                   help="Select a question or choose 'Other' to enter your own question")
 
-    selected_prompt = st.sidebar.selectbox("Select a prompt or choose 'Other' to enter your own prompt", prompt_options,
-                                           index=0)
-
-    if selected_prompt == "Other":
-        custom_prompt = st.sidebar.text_input("Enter your own prompt")
+    if selected_prompt == "Other": # What is the color of the anomaly?
+        # custom_prompt = st.sidebar.text_input("Enter your own prompt")
+        custom_prompt = st.text_input("Enter your own prompt")
         prompt = custom_prompt if custom_prompt else "No custom prompt entered"
     else:
         prompt = selected_prompt
@@ -91,26 +116,9 @@ def main():
     valid_dataset = "/home/june/Code/VQA-UAD/data/dataset/annotations/new_valid.json"
     test_dataset ="/home/june/Code/VQA-UAD/data/dataset/annotations/new_test.json"
 
-    # Display the images
-    image_path_orig = image_path.replace("{}", "orig")
-    image_path_anomaly = image_path.replace("{}", "anomaly")
-    image_path_rec = image_path.replace("{}", "rec")
-
-    if os.path.exists(image_path_orig) and os.path.exists(image_path_anomaly) and os.path.exists(image_path_rec):
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.image(image_path_orig, caption='Original Image', use_column_width=True)
-
-        with col2:
-            st.image(image_path_anomaly, caption='Anomaly Image', use_column_width=True)
-
-        with col3:
-            st.image(image_path_rec, caption='Reconstructed Image', use_column_width=True)
-    else:
-        st.write("Images not found at provided paths")
-
     st.title("Predicted Results:")
-    if st.sidebar.button("Run Inference"):
+    # if st.sidebar.button("Run Inference"):
+    if st.button("Run Inference"):
         with st.spinner("Running inference..."):
             args = Namespace(img_encoder=img_encoder, ckpt_path=ckpt_path, dataset=dataset, image_type=image_type,
                              image_channel=image_channel, image_path=image_path, model_type=model_type, seed=seed,
