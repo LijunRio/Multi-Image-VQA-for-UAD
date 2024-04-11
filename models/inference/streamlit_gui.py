@@ -47,7 +47,8 @@ def run_inference(args):
 
 
 def main():
-    st.title("Multi Image VQA for Unsupervised Anomaly Detection")
+    # st.set_page_config(layout="centered")
+    st.markdown("<center><h1>Multi Image VQA for Unsupervised Anomaly Detection</h1></center>", unsafe_allow_html=True)
     # Sidebar for user input
     # st.sidebar.header("Inputs")
     # image_path = st.sidebar.text_input("image path","/media/june/B6CAFC57CAFC14F9/Data/Anomaly_dataset/posttreatment_change_25_{}.png")
@@ -55,7 +56,7 @@ def main():
     st.header("Inputs")
     # image_path = st.text_input("**Image Path**","/media/june/B6CAFC57CAFC14F9/Data/Anomaly_dataset/posttreatment_change_25_{}.png")
     image_path = st.text_input("**Image Path**",
-                               "/media/june/B6CAFC57CAFC14F9/Data/Anomaly_dataset/posttreatment_change_10_{}.png",
+                               "/media/june/B6CAFC57CAFC14F9/Data/Anomaly_dataset/posttreatment_change_10_{}.png", #20
                                key="image_path_input", max_chars=500, help="Input the path to the image, and please replace the 'orig', 'anomaly','rec' to {}.")
 
     # Display the images
@@ -91,7 +92,7 @@ def main():
     selected_prompt = st.selectbox("Question:", prompt_options,index=0,
                                    help="Select a question or choose 'Other' to enter your own question")
 
-    if selected_prompt == "Other": # What is the color of the anomaly?
+    if selected_prompt == "Other": # What is the color of the anomaly? /What is the red color mean?
         # custom_prompt = st.sidebar.text_input("Enter your own prompt")
         custom_prompt = st.text_input("Enter your own prompt")
         prompt = custom_prompt if custom_prompt else "No custom prompt entered"
@@ -116,7 +117,7 @@ def main():
     valid_dataset = "/home/june/Code/VQA-UAD/data/dataset/annotations/new_valid.json"
     test_dataset ="/home/june/Code/VQA-UAD/data/dataset/annotations/new_test.json"
 
-    st.title("Predicted Results:")
+    st.header("Predicted Results:")
     # if st.sidebar.button("Run Inference"):
     if st.button("Run Inference"):
         with st.spinner("Running inference..."):
