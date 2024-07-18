@@ -6,19 +6,30 @@ This repository hosts the code for our paper titled "[Language Models Meet Anoma
 ![](static/images/teaser.gif)
 *Our framework is designed to process questions in conjunction with results from anomaly detection methods aiming to provide clinicians with clear, interpretable responses that render anomaly map analyses more intuitive and clinically actionable.*
 
-## Citation
-Please cite our paper if you find this repository helpful for your research:
+[//]: # (## Citation)
 
-```latex
-@misc{li2024multiimage,
-      title={Multi-Image Visual Question Answering for Unsupervised Anomaly Detection}, 
-      author={Jun Li and Cosmin I. Bercea and Philip Müller and Lina Felsner and Suhwan Kim and Daniel Rueckert and Benedikt Wiestler and Julia A. Schnabel},
-      year={2024},
-      eprint={2404.07622},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV}
-}
-```
+[//]: # (Please cite our paper if you find this repository helpful for your research:)
+
+[//]: # ()
+[//]: # (```latex)
+
+[//]: # (@misc{li2024multiimage,)
+
+[//]: # (      title={Multi-Image Visual Question Answering for Unsupervised Anomaly Detection}, )
+
+[//]: # (      author={Jun Li and Cosmin I. Bercea and Philip Müller and Lina Felsner and Suhwan Kim and Daniel Rueckert and Benedikt Wiestler and Julia A. Schnabel},)
+
+[//]: # (      year={2024},)
+
+[//]: # (      eprint={2404.07622},)
+
+[//]: # (      archivePrefix={arXiv},)
+
+[//]: # (      primaryClass={cs.CV})
+
+[//]: # (})
+
+[//]: # (```)
 
 ## Dataset Setup
 - **MI-VQA Dataset**: Download from [this link](https://drive.google.com/file/d/1mHjtd_yV6ewRFC7ujwBM9_HDSnKUx5l5/view?usp=sharing) and save it to `./data/dataset`.
