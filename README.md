@@ -3,6 +3,9 @@
 
 This repository hosts the code for our paper titled "[Language Models Meet Anomaly Detection for Better Interpretability and Generalizability](https://arxiv.org/pdf/2404.07622.pdf)", which can also be explored further on our [project page](https://lijunrio.github.io/Multi-Image-VQA-for-UAD/).
 
+![](static/images/teaser.gif)
+*Our framework is designed to process questions in conjunction with results from anomaly detection methods aiming to provide clinicians with clear, interpretable responses that render anomaly map analyses more intuitive and clinically actionable.*
+
 ## Citation
 Please cite our paper if you find this repository helpful for your research:
 
@@ -55,5 +58,7 @@ Please cite our paper if you find this repository helpful for your research:
     cd ./models/inference
     streamlit run streamlit_gui.py
     ```
+
+![](static/images/output.gif)
 
 
